@@ -78,7 +78,8 @@ function loadGame(opts = {}) {
       GAME_VERSION, GAME_NAME, W, H, MODES, MODE_ORDER, NUM_COLORS, HINT_AFTER,
       CATERPILLAR, SAVE_KEY, PRAISE,
       bubbleRadius, shuffle, shuffleWith, makeSequence, nextExpected, canTap,
-      isChainComplete, layoutBubbles, layoutCaterpillar, colorOf, currentMode,
+      isChainComplete, layoutBubbles, layoutCaterpillar, caterpillarMetrics,
+      caterpillarFitsOnScreen, colorOf, currentMode,
       hitBubble, applyTapAt, handleTap, enterPlay, enterMenu, enterWin, layoutRound,
       onChainComplete, updatePlay,
       state: () => state,
@@ -219,7 +220,8 @@ section('config integrity');
   }
   assert(T.NUM_COLORS[0] === null || T.NUM_COLORS[0] == null, 'no color 0');
   assert(T.HINT_AFTER > 0, 'HINT_AFTER positive');
-  assert(T.CATERPILLAR.headX === T.W / 2, 'head centered');
+  // Head anchors on the right so body grows left on-screen
+  assert(T.CATERPILLAR.headX > T.W * 0.55, 'head starts on the right half');
   assert(T.bubbleRadius(5) > T.bubbleRadius(10), 'larger bubbles when fewer');
 }
 
@@ -310,18 +312,19 @@ section('layoutBubbles');
 }
 
 // =====================================================================
-// layoutCaterpillar
+// layoutCaterpillar — stays on screen through Challenge (1–10)
 // =====================================================================
 section('layoutCaterpillar');
 {
   const T = loadGame();
-  const empty = T.layoutCaterpillar([]);
+  const empty = T.layoutCaterpillar([], { maxN: 5 });
   assert(!!empty.head, 'has head');
   assertEq(empty.segments.length, 0, 'no segs empty');
-  assertEq(empty.head.x, T.CATERPILLAR.headX, 'head X');
+  assert(empty.head.x > T.W * 0.55, 'empty head on right');
   assertEq(empty.head.y, T.CATERPILLAR.headY, 'head Y');
+  assert(T.caterpillarFitsOnScreen(empty), 'empty fits on screen');
 
-  const grown = T.layoutCaterpillar([1, 2, 3, 4, 5]);
+  const grown = T.layoutCaterpillar([1, 2, 3, 4, 5], { maxN: 5 });
   assertEq(grown.segments.length, 5, '5 segments');
   // Segments trail left of head
   for (const s of grown.segments) {
@@ -333,9 +336,34 @@ section('layoutCaterpillar');
   assert(nearest.x > farthest.x, 'segments grow leftward');
   assertEq(nearest.n, 1, 'first collected nearest');
   assertEq(farthest.n, 5, 'last collected farthest');
+  assert(T.caterpillarFitsOnScreen(grown), '5-seg body fits on screen');
+
+  // Challenge mode: full 1–10 must stay on canvas
+  const full = T.makeSequence(10);
+  const challenge = T.layoutCaterpillar(full, { maxN: 10 });
+  assertEq(challenge.segments.length, 10, '10 segments');
+  assert(T.caterpillarFitsOnScreen(challenge), 'challenge 1–10 fully on screen');
+  for (const s of challenge.segments) {
+    assert(s.x - s.r >= T.CATERPILLAR.pad - 0.5, `seg ${s.n} left edge on-screen`);
+    assert(s.x + s.r <= T.W - T.CATERPILLAR.pad + 0.5, `seg ${s.n} right edge on-screen`);
+  }
+  // Progressive growth never leaves the screen either
+  for (let k = 1; k <= 10; k++) {
+    const partial = T.layoutCaterpillar(full.slice(0, k), { maxN: 10 });
+    assert(
+      T.caterpillarFitsOnScreen(partial),
+      `after collecting ${k} number(s) still on-screen`
+    );
+  }
+
+  // Metrics: gap shrinks for larger chains
+  const m5 = T.caterpillarMetrics(5);
+  const m10 = T.caterpillarMetrics(10);
+  assert(m10.gap <= m5.gap + 0.01, 'tighter gap for 10 than for 5');
+  assert(m10.headX > T.W * 0.55, 'metrics head on right');
 
   // Custom anchors
-  const custom = T.layoutCaterpillar([1], { headX: 100, headY: 200, segGap: 50 });
+  const custom = T.layoutCaterpillar([1], { headX: 100, headY: 200, segGap: 50, maxN: 1 });
   assertEq(custom.head.x, 100, 'custom headX');
   assertEq(custom.segments[0].x, 100 - 50, 'custom gap');
 }

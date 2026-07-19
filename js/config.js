@@ -1,7 +1,7 @@
 'use strict';
 
 // Number Caterpillar — Keep CACHE in sw.js in sync: 'number-caterpillar-' + GAME_VERSION
-const GAME_VERSION = '1.0.001';
+const GAME_VERSION = '1.0.002';
 const GAME_VERSION_LABEL = 'v' + GAME_VERSION;
 const GAME_NAME = 'Number Caterpillar';
 
@@ -41,13 +41,18 @@ const NUM_COLORS = [
   { fill: '#8D6E63', stroke: '#4E342E' }, // 10 brown
 ];
 
-/** Caterpillar layout anchors (canvas space) */
+/**
+ * Caterpillar layout (canvas space).
+ * Head anchors on the RIGHT so the body grows LEFT and stays on screen through 1–10.
+ */
 const CATERPILLAR = {
-  headX: W / 2,
   headY: H - 168,
-  segR: 22,
-  segGap: 40,
-  headR: 28,
+  segR: 20,
+  segGap: 36,       // preferred gap; shrinks when maxN is large
+  headR: 26,
+  pad: 22,          // keep whole bug inside the canvas
+  /** Default head X when no maxN sizing (right-side start) */
+  get headX() { return W - this.pad - this.headR; },
 };
 
 /** Number bubble radius by count */

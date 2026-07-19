@@ -199,33 +199,76 @@ function layoutBubbles(numbers, opts = {}) {
 }
 
 /**
- * Pure caterpillar segment positions: head fixed, body grows left-right arc upward.
- * Segment 0 = first collected (closest to head), last = farthest.
+ * Metrics so a full chain of `maxN` segments + head fits on screen.
+ * Head sits on the right; body trails left with a gap that shrinks if needed.
+ * @param {number} [maxN=10]
+ * @param {number} [width=W]
+ */
+function caterpillarMetrics(maxN = 10, width = W) {
+  const pad = CATERPILLAR.pad;
+  const headR = CATERPILLAR.headR;
+  const segR = CATERPILLAR.segR;
+  const n = Math.max(1, Math.min(10, maxN | 0));
+  const headX = width - pad - headR;
+  const headY = CATERPILLAR.headY;
+  // Farthest segment center must stay ≥ pad + segR
+  const leftmostCenter = pad + segR;
+  const span = Math.max(segR * 2, headX - leftmostCenter);
+  const gap = Math.min(CATERPILLAR.segGap, span / n);
+  return { headX, headY, gap, segR, headR, pad, maxN: n, leftmostCenter };
+}
+
+/**
+ * Pure caterpillar positions: head on the RIGHT, body grows LEFT.
+ * Segment 0 = first collected (closest to head), last = farthest (leftmost).
+ * Always keeps every segment + head fully on-canvas for the planned maxN.
+ *
  * @param {number[]} collectedNums - in order collected (1,2,3...)
- * @param {{ headX?: number, headY?: number, segGap?: number }} [opts]
+ * @param {{ headX?: number, headY?: number, segGap?: number, maxN?: number, width?: number }} [opts]
  */
 function layoutCaterpillar(collectedNums, opts = {}) {
-  const headX = opts.headX ?? CATERPILLAR.headX;
-  const headY = opts.headY ?? CATERPILLAR.headY;
-  const gap = opts.segGap ?? CATERPILLAR.segGap;
+  const planN = Math.max(
+    collectedNums ? collectedNums.length : 0,
+    opts.maxN != null ? (opts.maxN | 0) : (typeof maxN === 'number' ? maxN : 10),
+    1
+  );
+  const m = caterpillarMetrics(planN, opts.width ?? W);
+  const headX = opts.headX != null ? opts.headX : m.headX;
+  const headY = opts.headY != null ? opts.headY : m.headY;
+  const gap = opts.segGap != null ? opts.segGap : m.gap;
   const segs = [];
-  // Body trails leftward then curves — kid-friendly horizontal crawl
+  // Body trails leftward with a gentle wave
   for (let i = 0; i < collectedNums.length; i++) {
-    // i=0 is nearest head (just behind), grows to the left
     const t = i + 1;
     const x = headX - t * gap;
-    const y = headY + Math.sin(t * 0.55) * 10;
+    const y = headY + Math.sin(t * 0.55) * 8;
     segs.push({
       n: collectedNums[i],
       x,
       y,
-      r: CATERPILLAR.segR,
+      r: m.segR,
     });
   }
   return {
-    head: { x: headX, y: headY, r: CATERPILLAR.headR },
+    head: { x: headX, y: headY, r: m.headR },
     segments: segs,
+    gap,
+    metrics: m,
   };
+}
+
+/** True if every head/segment circle is fully inside the canvas (with pad). */
+function caterpillarFitsOnScreen(laid, width = W, height = H, pad = CATERPILLAR.pad) {
+  if (!laid || !laid.head) return false;
+  const pts = [laid.head, ...(laid.segments || [])];
+  for (const p of pts) {
+    const r = p.r || CATERPILLAR.segR;
+    if (p.x - r < pad - 0.5) return false;
+    if (p.x + r > width - pad + 0.5) return false;
+    if (p.y - r < 0) return false;
+    if (p.y + r > height) return false;
+  }
+  return true;
 }
 
 function enterMenu() {
@@ -355,8 +398,12 @@ function onChainComplete() {
   recordChain();
   sfxButterfly();
   butterflyT = save.reducedMotion ? 0.9 : 1.6;
-  spawnBurst(CATERPILLAR.headX, CATERPILLAR.headY - 40, '#FFEE58', 24);
-  spawnBurst(CATERPILLAR.headX, CATERPILLAR.headY - 60, '#EC407A', 16);
+  {
+    const hx = caterpillarMetrics(maxN).headX;
+    const hy = CATERPILLAR.headY;
+    spawnBurst(hx, hy - 40, '#FFEE58', 24);
+    spawnBurst(hx, hy - 60, '#EC407A', 16);
+  }
   spawnPraise(W / 2, 140, 'Butterfly!');
 
   const m = currentMode();
@@ -508,7 +555,7 @@ function drawBubble(ctx, b, opts = {}) {
 }
 
 function drawCaterpillar(ctx) {
-  const laid = layoutCaterpillar(segments);
+  const laid = layoutCaterpillar(segments, { maxN: maxN || 10 });
   const headBob = Math.sin(bob) * 3;
 
   if (butterflyT > 0) {

@@ -1,5 +1,5 @@
 // Number Caterpillar — bump with GAME_VERSION in js/config.js
-const CACHE = 'number-caterpillar-1.0.001';
+const CACHE = 'number-caterpillar-1.0.002';
 
 const ASSETS = [
   './',
