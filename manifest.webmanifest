@@ -1,0 +1,26 @@
+{
+  "name": "Number Caterpillar",
+  "short_name": "Caterpillar",
+  "description": "Tap numbers in order 1→2→3… and grow a friendly caterpillar. Soft counting fun for ages 4–6 — butterfly celebration, no fail screens.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2e4a1f",
+  "theme_color": "#558B2F",
+  "categories": ["games", "kids", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
