@@ -25,26 +25,10 @@ Play at https://jmitchell238.github.io/number-caterpillar/. It's one of the game
 
 There are no lives, ads, accounts or fail screens.
 
-## Running locally
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open http://localhost:8080. The service worker needs `localhost` or HTTPS.
-
-Plain HTML, CSS and canvas with no build step.
-
-## Tests
-
-```bash
-node tests/run.mjs
-```
-
-## Versioning
-
-When you bump `GAME_VERSION` in `js/config.js`, set `CACHE` in `sw.js` to `'number-caterpillar-' + GAME_VERSION`.
-
 ## License
 
 Personal project for the family.
+
+## Development
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for running it locally, tests and versioning, and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the code is organized.
