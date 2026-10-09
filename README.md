@@ -1,10 +1,8 @@
 # Number Caterpillar
 
-Tap numbers in order **1 → 2 → 3…** and grow a friendly caterpillar. Finish the chain for a butterfly celebration. Soft counting fun for ages **4–6**.
+Tap the numbers in order (1, 2, 3…) to grow a caterpillar. Finish the chain and it turns into a butterfly. A counting game for ages 4–6.
 
-**Play:** https://jmitchell238.github.io/number-caterpillar/
-
-Part of [Arcade Hub](https://jmitchell238.github.io/arcade-hub/).
+Play at https://jmitchell238.github.io/number-caterpillar/. It's one of the games in [Arcade Hub](https://jmitchell238.github.io/arcade-hub/).
 
 ## Modes
 
@@ -17,18 +15,25 @@ Part of [Arcade Hub](https://jmitchell238.github.io/arcade-hub/).
 
 ## Features
 
-- Big colorful number bubbles
-- Caterpillar grows a segment on each correct tap
-- Wrong tap → soft shake + glow on the right number (no lives)
-- Chain complete → butterfly metamorphosis + confetti
-- Optional spoken numbers (device speech synthesis)
-- Sound mute + reduced motion
-- Offline PWA after first visit
-- Zero fail screens
+- Big, colorful number bubbles
+- The caterpillar grows a segment with each correct tap
+- A wrong tap gives a small shake and highlights the right number. There are no lives.
+- Finishing the chain turns the caterpillar into a butterfly, with confetti
+- Optional spoken numbers, using the device's built-in speech
+- Mute and Calm motion settings
+- Installable PWA that works offline after the first visit
 
-## Stack
+There are no lives, ads, accounts or fail screens.
 
-Static HTML / CSS / Canvas. No build step.
+## Running locally
+
+```bash
+python3 -m http.server 8080
+```
+
+Then open http://localhost:8080. The service worker needs `localhost` or HTTPS.
+
+Plain HTML, CSS and canvas with no build step.
 
 ## Tests
 
@@ -36,22 +41,10 @@ Static HTML / CSS / Canvas. No build step.
 node tests/run.mjs
 ```
 
-VM-loaded unit tests cover sequence rules, layout, hit testing, play flow (correct/wrong/complete), modes, save, and PWA shell checks.
-
 ## Versioning
 
-`GAME_VERSION` in `js/config.js` ↔ `CACHE` in `sw.js`.
-
-## Local preview
-
-```bash
-python3 -m http.server 8080
-```
-
-## Parents
-
-No lives, ads, accounts, or fail screens. Educational without feeling like homework.
+When you bump `GAME_VERSION` in `js/config.js`, set `CACHE` in `sw.js` to `'number-caterpillar-' + GAME_VERSION`.
 
 ## License
 
-Personal project for family Arcade Hub.
+Personal project for the family.
