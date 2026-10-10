@@ -1,7 +1,7 @@
 'use strict';
 
 // Number Caterpillar — Keep CACHE in sw.js in sync: 'number-caterpillar-' + GAME_VERSION
-const GAME_VERSION = '1.0.002';
+const GAME_VERSION = '1.0.003';
 const GAME_VERSION_LABEL = 'v' + GAME_VERSION;
 const GAME_NAME = 'Number Caterpillar';
 
